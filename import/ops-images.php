@@ -5,9 +5,14 @@
  *
  * POURQUOI CE FICHIER EXISTE, ET PAS UN SIMPLE IMPORT WOOCOMMERCE.
  *
- * Le parc pese 1,35 Go (mesure : 240 fichiers reellement lus, intervalle a
- * 95 % 1,15 a 1,55 Go). Trois choses rendent l'import WooCommerce direct
- * impraticable, et elles sont mesurees, pas supposees :
+ * Le parc pese environ 1,5 Go. Deux mesures independantes, qui se recoupent :
+ * un tirage aleatoire de 240 fichiers donne 1,35 Go (intervalle a 95 % :
+ * 1,15 a 1,55 Go), et un bloc de 740 fichiers reellement rapatries donne
+ * 74 Ko par image, soit 1,53 Go. Prevois 3 Go de libre : WordPress fabrique
+ * 4 a 5 vignettes derivees par image.
+ *
+ * Trois choses rendent l'import WooCommerce direct impraticable, et elles
+ * sont mesurees, pas supposees :
  *
  *  1. Les images d'ops-store.com ne sont pas des fichiers statiques. Elles
  *     sortent d'un script PHP : entetes « Content-Disposition », cookie
@@ -49,8 +54,15 @@
  *
  *     La page travaille par tranches d'environ 20 secondes puis se recharge
  *     toute seule. Tu peux fermer l'onglet quand tu veux et revenir plus
- *     tard : elle reprend exactement ou elle en etait. Compte 1 a 3 heures
- *     au total selon ton hebergement.
+ *     tard : elle reprend exactement ou elle en etait.
+ *
+ *     DUREE. Mesuree ici sur 1 140 images reelles : environ 1,5 image par
+ *     seconde, soit a peu pres 4 heures pour les 20 662. Ce n'est pas une
+ *     estimation optimiste arrondie vers le bas — c'est le debit constate,
+ *     et il vient d'eux : leurs images sortent d'un script PHP, sans cache.
+ *     Ton hebergement peut faire mieux ou moins bien. Comme ca tourne tout
+ *     seul et que ca reprend, la duree n'a pas grande importance : lance-le
+ *     et oublie-le.
  *
  *  4. Quand elle affiche TERMINE, clique sur « Fabriquer le CSV local ». Elle
  *     ecrit alors  ops-produits-local.csv  a cote — c'est CE fichier que tu

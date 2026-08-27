@@ -23,7 +23,8 @@ produit le fichier d'import WooCommerce livre a cote (`Type: external`).
 | marques | 532 |
 | rayons reconstruits | 20 |
 | liens d'images retenus | 20 662 |
-| poids du parc d'images | **1,35 Go** (240 fichiers lus ; intervalle a 95 % : 1,15–1,55 Go) |
+| poids du parc d'images | **~1,5 Go** (240 fichiers tires au sort : 1,35 Go, IC 95 % 1,15–1,55 ; 740 fichiers rapatries : 74 Ko/image → 1,53 Go) |
+| debit constate | 1,5 image/s → ~4 h pour les 20 662 |
 | liens `.mp4` retires | 214 — **tous morts**, recensement complet 214/214 en 404 |
 | articles **sans description** | 6 936 (82 %) |
 | articles **sans prix** | 135 |
