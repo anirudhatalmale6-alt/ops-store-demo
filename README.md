@@ -22,7 +22,9 @@ produit le fichier d'import WooCommerce livre a cote (`Type: external`).
 | fiche sans intitule ecartee | 1 |
 | marques | 532 |
 | rayons reconstruits | 20 |
-| liens d'images | 20 971 (~1,8 Go, mesure sur 20 echantillons) |
+| liens d'images retenus | 20 662 |
+| poids du parc d'images | **1,35 Go** (240 fichiers lus ; intervalle a 95 % : 1,15–1,55 Go) |
+| liens `.mp4` retires | 214 — **tous morts**, recensement complet 214/214 en 404 |
 | articles **sans description** | 6 936 (82 %) |
 | articles **sans prix** | 135 |
 | prix | 0,50 € a 2 249,90 € (median 39,90 €) |
@@ -47,12 +49,45 @@ produit le fichier d'import WooCommerce livre a cote (`Type: external`).
    sont deux vocabulaires disjoints (`Caliber` n'est jamais rempli sur une
    fiche francaise, `Calibre` jamais sur une anglaise).
 
+## Les images (1,35 Go) — `import/ops-images.php`
+
+Deux options, et la difference n'est pas une preference de style.
+
+**a) Les laisser chez OPS.** C'est `import/ops-produits.csv` tel quel. Rien a
+faire, aucun octet copie. Mais leurs images sortent d'un script PHP avec
+`Cache-Control: no-store` et un cookie de session : elles ne seront mises en
+cache nulle part, chaque page vue reveille leur serveur, et le jour ou ils
+changent une adresse la vignette disparait chez toi.
+
+**b) Les rapatrier.** `import/ops-images.php` fait ce travail **depuis le
+serveur de destination**, par tranches de ~20 s, en reprenant ou il s'arrete.
+Il verifie la signature binaire de chaque fichier (une page d'erreur nommee
+`.jpg` n'est pas une image), ecrit dans un `.part` puis renomme — un fichier
+tronque ne peut donc pas etre pris pour un fichier complet a la reprise. A la
+fin il fabrique `ops-produits-local.csv`, dont la colonne `Images` pointe vers
+le domaine de destination, et garde le lien d'origine pour toute image qu'il
+n'a pas pu recuperer.
+
+Mode d'emploi complet en tete du fichier PHP.
+
+> **Pourquoi les 214 `.mp4` devaient partir.** Ils ne coutaient pas 214
+> vignettes, ils coutaient **171 fiches produit**. Dans
+> `abstract-wc-product-importer.php`, `get_attachment_id_from_url()` leve une
+> Exception quand le fichier ne repond pas ; `set_image_data()` est appele
+> *avant* `$object->save()` ; le `catch` renvoie une `WP_Error`. Le produit
+> n'est jamais enregistre. Une image manquante fait donc echouer la ligne
+> entiere, pas seulement son visuel.
+
+Les visuels appartiennent a OPS-Store : en heberger une copie releve de
+l'accord avec eux. Le script execute la decision, il ne la prend pas.
+
 ## Reconstruire
 
 ```
-python3 analyse.py    # l'audit complet du fichier
-python3 rayons.py     # la couverture des rayons
-python3 build.py      # le CSV WooCommerce + cette demo
+python3 analyse.py       # l'audit complet du fichier
+python3 rayons.py        # la couverture des rayons
+python3 build.py         # le CSV WooCommerce + cette demo
+python3 images.py        # le parc d'images : poids, liens morts, extensions
+python3 tests-ops.py     # 47 controles
+python3 tests-images.py  # 24 controles du rapatriement (vrai PHP, vrais fichiers)
 ```
-
-Les images ne sont pas recopiees : elles restent chez ops-store.com.

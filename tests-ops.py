@@ -167,6 +167,27 @@ mauvais = [k for k in refs_doubles
 t('sur chaque doublon FR/EN, c\'est la fiche anglaise qui est retenue',
   not mauvais, str(mauvais[:3]))
 
+# La colonne « Image » du fournisseur contenait 214 fichiers .mp4. Recensement
+# complet (pas echantillon) : les 214 repondent 404. Ils doivent avoir disparu
+# du fichier d'import, et l'enjeu n'est pas cosmetique — WooCommerce leve une
+# Exception sur une image introuvable AVANT d'enregistrer le produit
+# (abstract-wc-product-importer.php : set_image_data() puis $object->save()),
+# donc ces 214 liens faisaient rater 171 FICHES entieres, pas 171 vignettes.
+toutes_img = []
+for r in IMP:
+    toutes_img += [x.strip() for x in (r.get('Images') or '').split(',') if x.strip()]
+NON_IMG = ('.mp4', '.mov', '.avi', '.webm', '.wmv', '.mkv', '.pdf', '.zip')
+intrus = [u for u in toutes_img if u.split('?')[0].lower().endswith(NON_IMG)]
+t('aucun fichier non-image dans la colonne Images', not intrus, str(intrus[:2]))
+t('toutes les images sont en http(s)',
+  all(u.startswith('http') for u in toutes_img), str(len(toutes_img)))
+# Les noms de fichiers servent de noms locaux au rapatriement : une collision
+# ecraserait silencieusement une image par une autre.
+bases = [u.rsplit('/', 1)[-1].split('?')[0] for u in set(toutes_img)]
+t('les %d noms de fichiers images sont uniques (aucune collision au rapatriement)'
+  % len(bases), len(set(bases)) == len(bases),
+  '%d noms pour %d liens' % (len(set(bases)), len(bases)))
+
 # --- 3. les rayons ---------------------------------------------------------
 print('\n=== 3. rayons ===')
 lib = dict([(r[0], r[1]) for r in rayons.RAYONS] + [rayons.FOURRE_TOUT])

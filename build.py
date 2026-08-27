@@ -70,11 +70,23 @@ def texte(v):
     return '' if vide(v) else v.strip()
 
 
+# La colonne « Image » du fournisseur ne contient pas que des images : 214 des
+# 21 090 liens sont des .mp4. Ils sont TOUS morts — recensement complet, pas
+# echantillon : 214 reponses 404 sur 214 (voir images.py). Deux raisons de les
+# retirer, et la seconde est la vraie :
+#   1. un .mp4 n est pas une vignette de fiche produit ;
+#   2. WooCommerce, sur une image introuvable, INTERROMPT la ligne. Ces 214
+#      liens font donc rater 171 fiches — pas 171 vignettes, 171 FICHES.
+NON_IMAGE = ('.mp4', '.mov', '.avi', '.webm', '.wmv', '.mkv', '.pdf', '.zip')
+
+
 def images(l):
     out = []
     for i in range(1, 21):
         u = (l.get('Image %d' % i) or '').strip()
         if not vide(u) and u.startswith('http'):
+            if u.split('?')[0].lower().endswith(NON_IMAGE):
+                continue
             out.append(u)
     return out
 
